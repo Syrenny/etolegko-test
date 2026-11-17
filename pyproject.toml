@@ -7,7 +7,7 @@ name = "etolegko-download-speed"
 dynamic = ["version"]
 description = "Measure download speed with ten sequential HTTP requests"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 dependencies = []
 
 [project.scripts]
