@@ -162,6 +162,7 @@ def test_sigterm_during_download(slow_download):
 
 @pytest.mark.parametrize("status", [200, 404])
 def test_interactive_progress(httpserver, monkeypatch, capsys, status):
+    monkeypatch.setenv("NO_COLOR", "")
     monkeypatch.setattr(sys.stderr, "isatty", lambda: True)
     httpserver.expect_request("/file").respond_with_data(b"x" * 100_000, status=status)
 

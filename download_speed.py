@@ -5,9 +5,11 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from http.client import HTTPException
 import math
+import os
 import signal
 import sys
 from time import perf_counter
+from typing import TextIO
 from urllib.error import URLError
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
@@ -53,6 +55,12 @@ def positive_timeout(value: str) -> float:
     if not math.isfinite(timeout) or timeout <= 0:
         raise argparse.ArgumentTypeError("timeout must be finite and positive")
     return timeout
+
+
+def colored(text: str, code: str, stream: TextIO) -> str:
+    if stream.isatty() and "NO_COLOR" not in os.environ and os.environ.get("TERM") != "dumb":
+        return f"\033[{code}m{text}\033[0m"
+    return text
 
 
 class Progress:
@@ -141,16 +149,16 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Requests:              {len(result.durations)}/{REQUEST_COUNT}")
         print(f"Total downloaded:      {result.total_bytes / 1_048_576:.2f} MiB ({result.total_bytes} bytes)")
         print(f"Average request time:  {result.average_time:.3f} s")
-        print(f"Download speed:        {speed:.2f} Mbps")
+        print("Download speed:        " + colored(f"{speed:.2f} Mbps", "32", sys.stdout))
         return 0
     except KeyboardInterrupt:
-        print("Interrupted (SIGINT)", file=sys.stderr)
+        print(colored("Interrupted (SIGINT)", "31", sys.stderr), file=sys.stderr)
         return 130
     except Terminated:
-        print("Terminated (SIGTERM)", file=sys.stderr)
+        print(colored("Terminated (SIGTERM)", "31", sys.stderr), file=sys.stderr)
         return 143
     except (URLError, HTTPException, OSError, ValueError) as error:
-        print(f"Download failed: {error}", file=sys.stderr)
+        print(colored(f"Download failed: {error}", "31", sys.stderr), file=sys.stderr)
         return 1
     finally:
         signal.signal(signal.SIGTERM, previous_handler)
