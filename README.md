@@ -16,6 +16,8 @@ uvx --from git+https://github.com/Syrenny/etolegko-test.git download-speed https
 ```
 
 Из клонированного репозитория: `pipx install .`. Без установки: `python download_speed.py URL`.
+В терминале прогресс загрузки выводится одной обновляемой строкой в stderr; при перенаправлении stderr он отключён. Итоговая сводка — в stdout.
+
 Параметры: `--timeout SECONDS` (по умолчанию 30 секунд на сетевую операцию), `--help`, `--version`.
 
 ```text

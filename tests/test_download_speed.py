@@ -130,7 +130,7 @@ def test_invalid_arguments(arguments, capsys):
 
 
 def test_interrupt(monkeypatch, capsys):
-    def interrupt(*args):
+    def interrupt(*args, **kwargs):
         raise KeyboardInterrupt
     monkeypatch.setattr(app, "measure", interrupt)
     assert app.main(["http://localhost"]) == 130
@@ -158,3 +158,24 @@ def test_sigterm_during_download(slow_download):
         if process.poll() is None:
             process.kill()
             process.communicate(timeout=5)
+
+
+@pytest.mark.parametrize("status", [200, 404])
+def test_interactive_progress(httpserver, monkeypatch, capsys, status):
+    monkeypatch.setattr(sys.stderr, "isatty", lambda: True)
+    httpserver.expect_request("/file").respond_with_data(b"x" * 100_000, status=status)
+
+    assert app.main([httpserver.url_for("/file")]) == (0 if status == 200 else 1)
+
+    captured = capsys.readouterr()
+    assert "Downloading 1/10" in captured.err
+    assert "MiB received" in captured.err
+    assert "Downloading" not in captured.out
+    if status == 200:
+        assert "Downloading 10/10" in captured.err
+        assert "0.95 MiB received" in captured.err
+        assert "Download speed:" in captured.out
+        assert captured.err.endswith("\n")
+    else:
+        assert "\nDownload failed:" in captured.err
+        assert captured.out == ""
