@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "etolegko-download-speed"
+dynamic = ["version"]
+description = "Measure download speed with ten sequential HTTP requests"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+download-speed = "download_speed:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-httpserver>=1.2.1",
+]
+
+[tool.setuptools]
+py-modules = ["download_speed"]
+
+[tool.setuptools.dynamic]
+version = {attr = "download_speed.__version__"}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
